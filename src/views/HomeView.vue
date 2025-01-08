@@ -73,7 +73,17 @@ import {
   User,
   DataLine,
   Collection,
-  Light
+  Lightning,
+  HomeFilled,
+  Document,
+  Refresh,
+  Timer,
+  CircleClose,
+  Search,
+  Plus,
+  Edit,
+  Delete,
+  View
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -107,7 +117,7 @@ const quickAccessItems = [
   {
     title: '业务创新',
     desc: '管理创新项目',
-    icon: 'Light',
+    icon: 'Lightning',
     color: '#F56C6C',
     path: '/innovation'
   }
@@ -147,6 +157,7 @@ const initChart = () => {
   if (!visitChart.value) return
 
   chartInstance = echarts.init(visitChart.value)
+
   const option = {
     tooltip: {
       trigger: 'axis'
@@ -160,7 +171,9 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      data: timeRange.value === 'week'
+          ? ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+          : Array.from({length: 30}, (_, i) => `${i + 1}日`)
     },
     yAxis: {
       type: 'value'
@@ -170,7 +183,9 @@ const initChart = () => {
         name: '访问量',
         type: 'line',
         smooth: true,
-        data: [120, 132, 101, 134, 90, 230, 210],
+        data: timeRange.value === 'week'
+            ? [120, 132, 101, 134, 90, 230, 210]
+            : Array.from({length: 30}, () => Math.floor(Math.random() * 200 + 100)),
         areaStyle: {
           opacity: 0.1
         },
@@ -182,6 +197,11 @@ const initChart = () => {
   }
 
   chartInstance.setOption(option)
+}
+
+// 监听时间范围变化
+const handleTimeRangeChange = () => {
+  initChart()
 }
 
 // 监听窗口大小变化
@@ -261,6 +281,15 @@ onUnmounted(() => {
   margin: 0;
   font-size: 14px;
   color: #909399;
+}
+
+.system-overview {
+  margin-bottom: 20px;
+}
+
+.chart-card,
+.notice-card {
+  height: 100%;
 }
 
 .card-header {
