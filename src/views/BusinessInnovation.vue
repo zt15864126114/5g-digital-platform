@@ -165,8 +165,8 @@
             <el-tag :type="getProjectTypeTag(currentProject.type)">{{ currentProject.type }}</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="项目负责人">{{ currentProject.leader }}</el-descriptions-item>
-          <el-descriptions-item label="开始日期">{{ currentProject.startDate }}</el-descriptions-item>
-          <el-descriptions-item label="计划完成">{{ currentProject.endDate }}</el-descriptions-item>
+          <el-descriptions-item label="开始日期">{{formatDate(currentProject.startDate)}}</el-descriptions-item>
+          <el-descriptions-item label="计划完成">{{formatDate(currentProject.endDate) }}</el-descriptions-item>
           <el-descriptions-item label="项目进度">
             <el-progress
                 :percentage="currentProject.progress"
@@ -187,7 +187,7 @@
                 v-for="(milestone, index) in currentProject.milestones"
                 :key="index"
                 :type="milestone.status === '完成' ? 'success' : 'primary'"
-                :timestamp="milestone.date"
+                :timestamp="formatDate(milestone.date)"
             >
               {{ milestone.content }}
             </el-timeline-item>
