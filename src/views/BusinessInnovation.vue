@@ -40,8 +40,17 @@
           </template>
         </el-table-column>
         <el-table-column prop="leader" label="负责人" width="100" />
-        <el-table-column prop="startDate" label="开始日期" width="120" />
-        <el-table-column prop="endDate" label="计划完成" width="120" />
+        <el-table-column prop="startDate" label="开始日期" width="180">
+          <template #default="{ row }">
+            {{ formatDate(row.startDate) }}
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="endDate" label="计划完成" width="180">
+          <template #default="{ row }">
+            {{ formatDate(row.endDate) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="progress" label="进度" width="180">
           <template #default="{ row }">
             <el-progress
@@ -227,6 +236,14 @@ const projectStats = ref([
     color: '#F56C6C'
   }
 ])
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 // 项目数据
 const projectData = ref([
