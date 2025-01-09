@@ -250,7 +250,7 @@ const initTrendChart = () => {
       name: '用户数',
       type: 'line',
       smooth: true,
-      data: [4200, 4500, 4800, 5100, 5400, 5800, 6200, 6500, 6800, 7200, 7500, 7800],
+      data: [0, 0, 0, 0, 0, 0, 0, 0, 6800, 7200, 7500, 7800],
       symbolSize: 6,
       symbol: 'circle',
       itemStyle: {

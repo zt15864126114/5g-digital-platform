@@ -137,7 +137,7 @@ const statistics = ref([
 const tableData = ref([
   {
     id: 1,
-    date: '2024-03-20',
+    date: '2024-10-20',
     collector: '张明',
     source: '客户反馈',
     type: '产品建议',
@@ -146,7 +146,7 @@ const tableData = ref([
   },
   {
     id: 2,
-    date: '2024-03-20',
+    date: '2024-10-20',
     collector: '李华',
     source: '市场调研',
     type: '竞品信息',
@@ -155,16 +155,16 @@ const tableData = ref([
   },
   {
     id: 3,
-    date: '2024-03-19',
+    date: '2024-10-19',
     collector: '王芳',
     source: '行业会议',
     type: '行业动态',
-    content: '2024年第二季度将有新的5G行业政策出台，可能影响专网建设。',
+    content: '2024年第四季度将有新的5G行业政策出台，可能影响专网建设。',
     status: '待处理'
   },
   {
     id: 4,
-    date: '2024-03-19',
+    date: '2024-10-19',
     collector: '赵伟',
     source: '合作伙伴',
     type: '市场机会',
@@ -173,7 +173,7 @@ const tableData = ref([
   },
   {
     id: 5,
-    date: '2024-03-18',
+    date: '2024-10-18',
     collector: '陈明',
     source: '内部员工',
     type: '产品建议',

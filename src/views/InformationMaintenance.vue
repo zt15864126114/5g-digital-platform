@@ -308,7 +308,7 @@ const statistics = [
 const tableData = ref([
   {
     id: 1,
-    date: '2024-03-20',
+    date: '2024-10-20',
     type: '产品信息',
     title: '5G网络切片产品更新说明',
     operator: '张工',
@@ -321,7 +321,7 @@ const tableData = ref([
   },
   {
     id: 2,
-    date: '2024-03-19',
+    date: '2024-10-19',
     type: '技术文档',
     title: 'API接口文档更新',
     operator: '李工',
