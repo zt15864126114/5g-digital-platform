@@ -270,7 +270,6 @@
     </el-dialog>
   </div>
 </template>
-
 <script setup>
 import { ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -304,6 +303,137 @@ const statistics = [
   }
 ]
 
+// 状态变量
+const loading = ref(false)
+const dialogVisible = ref(false)
+const dialogType = ref('add')
+const detailVisible = ref(false)
+const approvalVisible = ref(false)
+const currentRecord = ref(null)
+const searchKeyword = ref('')
+const currentPage = ref(1)
+const pageSize = ref(10)
+const formRef = ref(null)
+const approvalFormRef = ref(null)
+
+// 选项数据
+const typeOptions = [
+  { label: '产品信息', value: '产品信息' },
+  { label: '技术文档', value: '技术文档' },
+  { label: '运维信息', value: '运维信息' },
+  { label: '市场动态', value: '市场动态' }
+]
+
+const categoryOptions = [
+  { label: '产品文档', value: '产品文档' },
+  { label: '开发文档', value: '开发文档' },
+  { label: '系统公告', value: '系统公告' },
+  { label: '操作手册', value: '操作手册' }
+]
+
+// 生成文档测试数据的函数
+const generateDocData = (count) => {
+  const operators = [
+    '张工', '李工', '王工', '赵工', '陈工', '刘工', '周工', '吴工', '郑工', '孙工',
+    '黄工', '朱工', '钱工', '林工', '徐工', '胡工', '马工', '曾工', '梁工', '杨工'
+  ]
+
+  const types = [
+    '产品信息', '技术文档', '操作手册', '培训资料', '方案设计',
+    '测试报告', '运维手册', '故障处理', '版本说明', '集成指南'
+  ]
+
+  const categories = [
+    '产品文档', '开发文档', '运维文档', '培训文档', '技术方案',
+    '测试文档', '用户手册', '规范标准', '研发文档', '集成文档'
+  ]
+
+  const titles = [
+    '5G网络切片产品更新说明',
+    'API接口文档更新',
+    '网络管理系统操作指南',
+    '边缘计算平台部署手册',
+    '5G专网解决方案设计',
+    '网络性能测试报告',
+    '故障诊断与处理手册',
+    '安全防护白皮书',
+    '系统架构设计说明',
+    '运维流程规范',
+    '智慧园区解决方案',
+    '物联网平台使用指南',
+    '网络优化分析报告',
+    '业务开通流程手册',
+    '系统升级指导书',
+    '性能调优方案',
+    '安全加固指南',
+    '容器化部署文档',
+    '监控平台使用手册',
+    '数据迁移方案',
+    '高可用性设计方案',
+    '负载均衡配置指南',
+    '网络拓扑设计',
+    '测试用例集',
+    'DevOps实施手册',
+    '微服务架构说明',
+    '数据备份方案',
+    '应急响应预案',
+    '版本发布说明',
+    '集成测试报告'
+  ]
+
+  const contents = [
+    '本次更新包含以下内容：\n1. 优化网络切片配置流程\n2. 新增自动化部署功能\n3. 提升性能监控准确度',
+    '更新了以下API接口文档：\n1. 用户认证接口\n2. 数据统计接口\n3. 配置管理接口',
+    '本文档主要包含：\n1. 系统架构说明\n2. 部署步骤详解\n3. 常见问题解答',
+    '更新要点：\n1. 新增功能说明\n2. 优化操作流程\n3. 修复已知问题',
+    '主要内容：\n1. 方案概述\n2. 技术架构\n3. 实施步骤\n4. 注意事项',
+    '测试结果：\n1. 性能测试数据\n2. 压力测试报告\n3. 优化建议',
+    '文档更新：\n1. 完善故障处理流程\n2. 新增常见问题解答\n3. 更新故障案例',
+    '重要说明：\n1. 安全策略更新\n2. 访问控制规则\n3. 日志审计要求',
+    '设计要点：\n1. 系统架构图\n2. 模块说明\n3. 接口定义\n4. 数据流程',
+    '规范要求：\n1. 运维流程\n2. 质量标准\n3. 验收规范'
+  ]
+
+  const attachmentTypes = [
+    { ext: 'pdf', size: ['2.1MB', '3.5MB', '4.2MB', '1.8MB', '5.3MB'] },
+    { ext: 'md', size: ['856KB', '920KB', '750KB', '1.2MB', '680KB'] },
+    { ext: 'docx', size: ['1.5MB', '2.2MB', '3.1MB', '1.9MB', '2.8MB'] },
+    { ext: 'pptx', size: ['3.8MB', '4.5MB', '2.9MB', '5.1MB', '3.3MB'] },
+    { ext: 'xlsx', size: ['1.1MB', '1.8MB', '2.3MB', '950KB', '1.6MB'] }
+  ]
+
+  return Array.from({ length: count }, (_, index) => {
+    const type = types[Math.floor(Math.random() * types.length)]
+    const title = titles[Math.floor(Math.random() * titles.length)]
+    const attachmentCount = Math.floor(Math.random() * 3) + 1 // 1-3个附件
+    const attachmentList = []
+
+    // 生成附件
+    for(let i = 0; i < attachmentCount; i++) {
+      const attType = attachmentTypes[Math.floor(Math.random() * attachmentTypes.length)]
+      attachmentList.push({
+        name: `${title.substring(0, 10)}_v${Math.floor(Math.random() * 5) + 1}.${attType.ext}`,
+        size: attType.size[Math.floor(Math.random() * attType.size.length)]
+      })
+    }
+
+    const date = new Date()
+    date.setDate(date.getDate() - Math.floor(Math.random() * 30))
+
+    return {
+      id: index + 3,
+      date: date.toISOString().split('T')[0],
+      type: type,
+      title: title,
+      operator: operators[Math.floor(Math.random() * operators.length)],
+      category: categories[Math.floor(Math.random() * categories.length)],
+      status: Math.random() > 0.3 ? '已审核' : '待审核',
+      content: contents[Math.floor(Math.random() * contents.length)],
+      attachments: attachmentList
+    }
+  })
+}
+
 // 表格数据
 const tableData = ref([
   {
@@ -332,7 +462,8 @@ const tableData = ref([
       { name: 'API文档v1.2.md', size: '856KB' },
       { name: '接口示例.json', size: '128KB' }
     ]
-  }
+  },
+  ...generateDocData(254) // 生成98条新数据，总共100条
 ])
 
 // 表单数据
@@ -364,22 +495,8 @@ const approvalRules = {
   comment: [{ required: true, message: '请输入审核意见', trigger: 'blur' }]
 }
 
-// 状态变量
-const loading = ref(false)
-const dialogVisible = ref(false)
-const dialogType = ref('add')
-const detailVisible = ref(false)
-const approvalVisible = ref(false)
-const currentRecord = ref(null)
-const searchKeyword = ref('')
-const currentPage = ref(1)
-const pageSize = ref(10)
-const formRef = ref(null)
-const approvalFormRef = ref(null)
-
 // 计算属性
-const total = computed(() => tableData.value.length)
-const filteredTableData = computed(() => {
+const filteredData = computed(() => {
   let data = tableData.value
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
@@ -392,49 +509,28 @@ const filteredTableData = computed(() => {
   return data
 })
 
-// 选项数据
-const typeOptions = [
-  { label: '产品信息', value: '产品信息' },
-  { label: '技术文档', value: '技术文档' },
-  { label: '运维信息', value: '运维信息' },
-  { label: '市场动态', value: '市场动态' }
-]
+// 计算分页后的数据
+const filteredTableData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return filteredData.value.slice(start, end)
+})
 
-const categoryOptions = [
-  { label: '产品文档', value: '产品文档' },
-  { label: '开发文档', value: '开发文档' },
-  { label: '系统公告', value: '系统公告' },
-  { label: '操作手册', value: '操作手册' }
-]
+// 计算总条数
+const total = computed(() => filteredData.value.length)
 
 // 方法
-const getTypeTag = (type) => {
-  const tagMap = {
-    '产品信息': 'success',
-    '技术文档': 'primary',
-    '运维信息': 'warning',
-    '市场动态': 'info'
-  }
-  return tagMap[type] || ''
+const handleSearch = () => {
+  currentPage.value = 1
 }
 
-const getCategoryTag = (category) => {
-  const tagMap = {
-    '产品文档': 'success',
-    '开发文档': 'primary',
-    '系统公告': 'warning',
-    '操作手册': 'info'
-  }
-  return tagMap[category] || ''
+const handleSizeChange = (val) => {
+  pageSize.value = val
+  currentPage.value = 1
 }
 
-const getStatusTag = (status) => {
-  const tagMap = {
-    '已审核': 'success',
-    '待审核': 'warning',
-    '已驳回': 'danger'
-  }
-  return tagMap[status] || ''
+const handleCurrentChange = (val) => {
+  currentPage.value = val
 }
 
 const handleAdd = () => {
@@ -474,6 +570,9 @@ const handleDelete = (row) => {
         const index = tableData.value.findIndex(item => item.id === row.id)
         if (index > -1) {
           tableData.value.splice(index, 1)
+          if (filteredTableData.value.length === 0 && currentPage.value > 1) {
+            currentPage.value--
+          }
           ElMessage.success('删除成功')
         }
       })
@@ -487,19 +586,6 @@ const handleApprove = (row) => {
     comment: ''
   }
   approvalVisible.value = true
-}
-
-const handleSearch = () => {
-  currentPage.value = 1
-}
-
-const handleSizeChange = (val) => {
-  pageSize.value = val
-  currentPage.value = 1
-}
-
-const handleCurrentChange = (val) => {
-  currentPage.value = val
 }
 
 const handleFileChange = (file, fileList) => {
@@ -525,6 +611,7 @@ const submitForm = async () => {
 
       if (dialogType.value === 'add') {
         tableData.value.unshift(newRecord)
+        currentPage.value = 1
         ElMessage.success('添加成功')
       } else {
         const index = tableData.value.findIndex(item => item.id === newRecord.id)
@@ -559,8 +646,37 @@ const submitApproval = async () => {
     }
   })
 }
-</script>
 
+// 标签类型方法
+const getTypeTag = (type) => {
+  const tagMap = {
+    '产品信息': 'success',
+    '技术文档': 'primary',
+    '运维信息': 'warning',
+    '市场动态': 'info'
+  }
+  return tagMap[type] || ''
+}
+
+const getCategoryTag = (category) => {
+  const tagMap = {
+    '产品文档': 'success',
+    '开发文档': 'primary',
+    '系统公告': 'warning',
+    '操作手册': 'info'
+  }
+  return tagMap[category] || ''
+}
+
+const getStatusTag = (status) => {
+  const tagMap = {
+    '已审核': 'success',
+    '待审核': 'warning',
+    '已驳回': 'danger'
+  }
+  return tagMap[status] || ''
+}
+</script>
 <style scoped>
 .maintenance-container {
   padding: 20px;
@@ -610,14 +726,32 @@ const submitApproval = async () => {
   font-weight: 500;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
 .content-box {
   white-space: pre-wrap;
   line-height: 1.5;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin: 15px 0;
+}
+
+.meta-info {
+  display: flex;
+  gap: 20px;
+  color: #606266;
+  margin: 10px 0;
 }
 
 .attachments-section,
 .approval-section {
   margin-top: 30px;
+  border-top: 1px solid #ebeef5;
+  padding-top: 20px;
 }
 
 .attachments-section h3,
@@ -625,12 +759,79 @@ const submitApproval = async () => {
   margin-bottom: 20px;
   font-weight: 500;
   color: #303133;
+  font-size: 16px;
+}
+
+.attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.attachment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.attachment-item span {
+  color: #606266;
 }
 
 .pagination-container {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+.detail-content {
+  padding: 0 20px;
+}
+
+.detail-content h3 {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #303133;
+}
+
+/* 表格内容样式优化 */
+:deep(.el-table) {
+  --el-table-header-bg-color: #f5f7fa;
+}
+
+:deep(.el-table th) {
+  font-weight: 600;
+}
+
+:deep(.el-table td) {
+  padding: 8px 0;
+}
+
+/* 表单样式优化 */
+:deep(.el-form-item__label) {
+  font-weight: 500;
+}
+
+:deep(.el-upload__tip) {
+  line-height: 1.5;
+  margin-top: 5px;
+  color: #909399;
+}
+
+/* 时间线样式优化 */
+:deep(.el-timeline-item__content h4) {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+:deep(.el-timeline-item__content p) {
+  margin: 5px 0;
+  color: #606266;
 }
 
 /* 暗色主题适配 */
@@ -644,13 +845,101 @@ const submitApproval = async () => {
     color: #A3A6AD;
   }
 
-  .attachments-section h3,
-  .approval-section h3 {
+  .content-box {
+    background-color: #2b2b2b;
     color: #E5EAF3;
   }
 
-  .content-box {
+  .attachment-item {
+    background-color: #2b2b2b;
+  }
+
+  .attachment-item span {
     color: #E5EAF3;
+  }
+
+  .meta-info {
+    color: #A3A6AD;
+  }
+
+  .attachments-section,
+  .approval-section {
+    border-top-color: #363637;
+  }
+
+  .attachments-section h3,
+  .approval-section h3,
+  .detail-content h3 {
+    color: #E5EAF3;
+  }
+
+  :deep(.el-table) {
+    --el-table-header-bg-color: #2b2b2b;
+  }
+
+  :deep(.el-timeline-item__content p) {
+    color: #A3A6AD;
+  }
+}
+
+/* 响应式布局适配 */
+@media screen and (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .header-right {
+    width: 100%;
+  }
+
+  .el-input {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 10px;
+  }
+
+  .el-button {
+    width: 100%;
+  }
+
+  .meta-info {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .attachment-item {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+}
+
+/* 打印样式优化 */
+@media print {
+  .maintenance-container {
+    padding: 0;
+  }
+
+  .el-card {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .header-right,
+  .pagination-container,
+  .el-button {
+    display: none !important;
+  }
+
+  .content-box {
+    background: none;
+    padding: 0;
+  }
+
+  .attachment-item {
+    background: none;
+    border-bottom: 1px solid #ebeef5;
   }
 }
 </style>

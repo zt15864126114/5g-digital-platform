@@ -24,7 +24,7 @@
         </div>
       </template>
 
-      <el-table :data="tableData" style="width: 100%" border stripe>
+      <el-table :data="paginatedData" style="width: 100%" border stripe>
         <el-table-column prop="date" label="收集日期" width="120" />
         <el-table-column prop="collector" label="收集人" width="120" />
         <el-table-column prop="source" label="信息来源" width="120" />
@@ -57,7 +57,7 @@
         <el-pagination
             v-model:current-page="currentPage"
             v-model:page-size="pageSize"
-            :total="total"
+            :total="tableData.length"
             :page-sizes="[10, 20, 30, 50]"
             layout="total, sizes, prev, pager, next, jumper"
             @size-change="handleSizeChange"
@@ -121,17 +121,77 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 统计数据
 const statistics = ref([
   { title: '本月收集总量', value: '328', growth: 12.5 },
-  { title: '待处理信息', value: '45', growth: -8.3 },
-  { title: '已处理信息', value: '283', growth: 15.7 },
+  { title: '待处理信息', value: '90', growth: -8.3 },
+  { title: '已处理信息', value: '238', growth: 15.7 },
   { title: '信息采纳率', value: '86%', growth: 5.2 }
 ])
+// 生成测试数据的函数
+const generateTestData = (count) => {
+  const names = [
+    '张明', '李华', '王芳', '赵伟', '陈明', '刘洋', '周静', '吴超', '郑华', '孙明',
+    '黄海', '朱琳', '钱伟', '赵云', '孙策', '周瑜', '林俊', '王凯', '张鹏', '李想',
+    '陈佳', '刘星', '吴京', '郑智', '黄晓', '朱强', '钱多', '赵阳', '孙红', '周杰',
+    '林峰', '王浩', '张杰', '李梅', '陈华', '刘芳', '吴磊', '郑钧', '黄河', '朱迪'
+  ]
+  const sources = ['客户反馈', '市场调研', '行业会议', '合作伙伴', '内部员工', '社交媒体']
+  const types = ['产品建议', '竞品信息', '行业动态', '市场机会', '客户投诉', '其他']
+  const contents = [
+    '建议优化5G网络覆盖范围，部分区域信号不稳定。',
+    '竞争对手推出新的企业专网方案，价格更具竞争力。',
+    '工业互联网领域新政策出台，有利于5G应用推广。',
+    '某大型制造企业计划部署5G专网，需要详细方案。',
+    '现有管理平台响应速度较慢，建议技术优化。',
+    '用户反映计费系统occasionally出现延迟，需要排查。',
+    '新一代5G技术研发取得突破，可以考虑应用。',
+    '智慧园区项目需要更多5G应用场景支持。',
+    '边缘计算平台需要提升稳定性和可靠性。',
+    '客户希望增加更多数据分析功能。',
+    '5G专网切片资源调度需要优化，提高资源利用率。',
+    '建议增加网络性能实时监控大屏展示功能。',
+    '医疗行业客户需要更高的网络可靠性保障。',
+    '智能制造基地希望部署更多5G+AR远程指导应用。',
+    '车联网项目需要低时延网络支持，建议优化。',
+    '港口自动化项目需要5G专网覆盖方案。',
+    '新建5G基站选址需要考虑周边居民意见。',
+    '企业园区WiFi6与5G融合组网方案需求。',
+    '智慧城市项目需要大规模物联网接入支持。',
+    '5G消息业务推广需要更多创新营销方案。',
+    '工业互联网安全防护需要加强。',
+    '边缘计算节点扩容方案需要评估。',
+    '高铁5G覆盖优化需求增加。',
+    '新能源电厂智能运维需要5G支持。',
+    '矿山智能化改造项目启动。',
+    '钢铁企业数字化转型需求明确。',
+    '5G+智慧农业示范项目计划启动。',
+    '跨境电商物流需要5G物联网支持。',
+    '智慧校园项目需要升级改造。',
+    '5G云游戏业务体验需要优化。'
+  ]
+  const statuses = ['已处理', '待处理']
+
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date()
+    date.setDate(date.getDate() - Math.floor(Math.random() * 30))
+
+    return {
+      id: index + 6,
+      date: date.toISOString().split('T')[0],
+      collector: names[Math.floor(Math.random() * names.length)],
+      source: sources[Math.floor(Math.random() * sources.length)],
+      type: types[Math.floor(Math.random() * types.length)],
+      content: contents[Math.floor(Math.random() * contents.length)],
+      status: statuses[Math.floor(Math.random() * statuses.length)]
+    }
+  })
+}
+
 
 // 表格数据
 const tableData = ref([
@@ -179,7 +239,8 @@ const tableData = ref([
     type: '产品建议',
     content: '现有的网络切片管理界面操作复杂，建议优化用户体验。',
     status: '已处理'
-  }
+  },
+  ...generateTestData(323) // 生成45条新数据，总共50条
 ])
 
 // 选项数据
@@ -204,7 +265,13 @@ const typeOptions = [
 // 分页相关
 const currentPage = ref(1)
 const pageSize = ref(10)
-const total = ref(50)
+
+// 计算分页后的数据
+const paginatedData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return tableData.value.slice(start, end)
+})
 
 // 对话框相关
 const dialogVisible = ref(false)
@@ -307,6 +374,7 @@ const submitForm = async () => {
 
       if (dialogType.value === 'add') {
         tableData.value.unshift(newRecord)
+        currentPage.value = 1  // 添加新记录后跳转到第一页
         ElMessage.success('添加成功')
       } else {
         const index = tableData.value.findIndex(item => item.id === newRecord.id)
@@ -320,9 +388,10 @@ const submitForm = async () => {
   })
 }
 
+// 处理分页
 const handleSizeChange = (val) => {
   pageSize.value = val
-  currentPage.value = 1
+  currentPage.value = 1  // 重置到第一页
 }
 
 const handleCurrentChange = (val) => {
