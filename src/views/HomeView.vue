@@ -3,7 +3,7 @@
     <!-- 欢迎卡片 -->
     <el-card class="welcome-card">
       <div class="welcome-content">
-        <h2>欢迎使用5G数字化平台</h2>
+        <h2>欢迎使用中国农业银行股份有限公司济宁分行5G数字化平台</h2>
         <p>快速访问您的常用功能</p>
       </div>
     </el-card>
@@ -36,9 +36,11 @@
           <template #header>
             <div class="card-header">
               <span>系统访问趋势</span>
-              <el-radio-group v-model="timeRange" size="small">
+              <el-radio-group v-model="timeRange" size="small" @change="handleTimeRangeChange">
+                <el-radio-button label="day">今日</el-radio-button>
                 <el-radio-button label="week">本周</el-radio-button>
                 <el-radio-button label="month">本月</el-radio-button>
+<!--                <el-radio-button label="year">本年</el-radio-button>-->
               </el-radio-group>
             </div>
           </template>
@@ -64,26 +66,15 @@
     </el-row>
   </div>
 </template>
-
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import * as echarts from 'echarts'
 import {
   User,
   DataLine,
   Collection,
-  Lightning,
-  HomeFilled,
-  Document,
-  Refresh,
-  Timer,
-  CircleClose,
-  Search,
-  Plus,
-  Edit,
-  Delete,
-  View
+  Lightning
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -152,15 +143,57 @@ const navigateTo = (path) => {
   router.push(path)
 }
 
+// 生成图表数据
+const generateChartData = (range) => {
+  switch (range) {
+    case 'day':
+      return {
+        xAxis: Array.from({length: 24}, (_, i) => `${i}时`),
+        data: Array.from({length: 24}, () => Math.floor(Math.random() * 100 + 50))
+      }
+    case 'week':
+      return {
+        xAxis: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+        data: Array.from({length: 7}, () => Math.floor(Math.random() * 200 + 100))
+      }
+    case 'month':
+      return {
+        xAxis: Array.from({length: 30}, (_, i) => `${i + 1}日`),
+        data: Array.from({length: 30}, () => Math.floor(Math.random() * 300 + 150))
+      }
+    case 'year':
+      return {
+        xAxis: Array.from({length: 12}, (_, i) => `${i + 1}月`),
+        data: Array.from({length: 12}, () => Math.floor(Math.random() * 1000 + 500))
+      }
+    default:
+      return {
+        xAxis: [],
+        data: []
+      }
+  }
+}
+
 // 初始化图表
 const initChart = () => {
   if (!visitChart.value) return
 
   chartInstance = echarts.init(visitChart.value)
+  updateChartData(timeRange.value)
+}
+
+// 更新图表数据
+const updateChartData = (range) => {
+  if (!chartInstance) return
+
+  const { xAxis: xAxisData, data: seriesData } = generateChartData(range)
 
   const option = {
     tooltip: {
-      trigger: 'axis'
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
     },
     grid: {
       left: '3%',
@@ -171,26 +204,44 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: timeRange.value === 'week'
-          ? ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-          : Array.from({length: 30}, (_, i) => `${i + 1}日`)
+      data: xAxisData,
+      axisLine: {
+        lineStyle: {
+          color: '#909399'
+        }
+      }
     },
     yAxis: {
-      type: 'value'
+      type: 'value',
+      axisLine: {
+        lineStyle: {
+          color: '#909399'
+        }
+      },
+      splitLine: {
+        lineStyle: {
+          type: 'dashed'
+        }
+      }
     },
     series: [
       {
         name: '访问量',
         type: 'line',
         smooth: true,
-        data: timeRange.value === 'week'
-            ? [120, 132, 101, 134, 90, 230, 210]
-            : Array.from({length: 30}, () => Math.floor(Math.random() * 200 + 100)),
+        data: seriesData,
         areaStyle: {
-          opacity: 0.1
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: 'rgba(64,158,255,0.3)' },
+            { offset: 1, color: 'rgba(64,158,255,0.1)' }
+          ])
         },
         lineStyle: {
-          width: 3
+          width: 3,
+          color: '#409EFF'
+        },
+        itemStyle: {
+          color: '#409EFF'
         }
       }
     ]
@@ -199,9 +250,9 @@ const initChart = () => {
   chartInstance.setOption(option)
 }
 
-// 监听时间范围变化
-const handleTimeRangeChange = () => {
-  initChart()
+// 处理时间范围变化
+const handleTimeRangeChange = (value) => {
+  updateChartData(value)
 }
 
 // 监听窗口大小变化
@@ -210,6 +261,11 @@ const handleResize = () => {
     chartInstance.resize()
   }
 }
+
+// 监听时间范围变化
+watch(timeRange, (newValue) => {
+  updateChartData(newValue)
+})
 
 onMounted(() => {
   initChart()
@@ -223,7 +279,6 @@ onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
 })
 </script>
-
 <style scoped>
 .home-container {
   padding: 20px;
@@ -255,11 +310,12 @@ onUnmounted(() => {
 
 .quick-card {
   cursor: pointer;
-  transition: transform 0.3s;
+  transition: all 0.3s;
 }
 
 .quick-card:hover {
   transform: translateY(-5px);
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
 }
 
 .quick-icon {
@@ -305,9 +361,16 @@ onUnmounted(() => {
     align-items: center;
     padding: 10px 0;
     border-bottom: 1px solid #EBEEF5;
+    cursor: pointer;
+    transition: all 0.3s;
 
     &:last-child {
       border-bottom: none;
+    }
+
+    &:hover {
+      background-color: #f5f7fa;
+      padding-left: 10px;
     }
   }
 
@@ -331,17 +394,65 @@ onUnmounted(() => {
     color: #E5EAF3;
   }
 
+  .welcome-content p {
+    color: #A3A6AD;
+  }
+
   .quick-info h3 {
     color: #E5EAF3;
   }
 
+  .quick-info p {
+    color: #A3A6AD;
+  }
+
   .notice-list .notice-item {
     border-bottom-color: #363637;
+
+    &:hover {
+      background-color: #2b2b2b;
+    }
+  }
+
+  .notice-time {
+    color: #A3A6AD;
   }
 
   .el-card {
     background: #1d1e1f;
     border: 1px solid #363637;
+    color: #E5EAF3;
+  }
+
+  .card-header {
+    border-bottom-color: #363637;
+  }
+
+  .el-radio-button__inner {
+    background-color: #1d1e1f;
+    border-color: #363637;
+    color: #E5EAF3;
+  }
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 768px) {
+  .quick-access {
+    .el-col {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+  }
+
+  .system-overview {
+    .el-col {
+      width: 100%;
+      margin-bottom: 15px;
+    }
+  }
+
+  .welcome-content h2 {
+    font-size: 20px;
   }
 }
 </style>
