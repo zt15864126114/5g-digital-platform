@@ -1,4 +1,8 @@
 <template>
+  <div class="sidebar-container">
+  <div class="logo-container">
+    <img src="@/assets/images/abc-logo.png" alt="中国农业银行" class="logo">
+  </div>
   <el-menu
       :default-active="route.path"
       class="nav-menu"
@@ -42,6 +46,7 @@
       <template #title>业务创新</template>
     </el-menu-item>
   </el-menu>
+  </div>
 </template>
 
 <script setup>
@@ -65,6 +70,19 @@ const isCollapse = ref(false)
 .nav-menu {
   height: 100%;
   border-right: none;
+}
+.logo-container {
+  height: 50px; /* 减小高度 */
+  padding: 8px; /* 减小内边距 */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #dcdfe6;
+}
+
+.logo {
+  height: 32px; /* 减小 logo 大小 */
+  width: auto;
 }
 
 .nav-menu:not(.el-menu--collapse) {
